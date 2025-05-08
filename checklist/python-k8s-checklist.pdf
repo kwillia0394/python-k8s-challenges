@@ -1,0 +1,240 @@
+1. **Pod Health Checker** – Write a Python script that uses the Kubernetes API to check the health of all pods in a namespace.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+
+def check_pod_health(namespace="default"):
+    pods = v1.list_namespaced_pod(namespace)
+    for pod in pods.items:
+        print(f"{pod.metadata.name}: {pod.status.phase}")
+
+check_pod_health()
+
+2. **Automatic Pod Scaling** – Implement logic to monitor CPU usage of pods and scale deployments up or down based on predefined thresholds.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+apps_v1 = client.AppsV1Api()
+
+def scale_deployment(namespace, deployment_name, replicas):
+    body = {"spec": {"replicas": replicas}}
+    apps_v1.patch_namespaced_deployment(deployment_name, namespace, body)
+
+scale_deployment("default", "my-deployment", 3)
+
+3. **Secret Management** – Write a script that securely retrieves Kubernetes secrets and ensures they meet compliance standards.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+
+def get_secret(namespace, secret_name):
+    secret = v1.read_namespaced_secret(secret_name, namespace)
+    print(secret.data)
+
+get_secret("default", "my-secret")
+
+4. **ConfigMap Validator** – Develop a tool that verifies ConfigMap entries against a predefined schema.
+
+import json
+
+def validate_configmap(configmap_data, schema):
+    try:
+        json.loads(configmap_data)
+        print("Valid ConfigMap format!")
+    except json.JSONDecodeError:
+        print("Invalid ConfigMap format!")
+
+validate_configmap('{"key": "value"}', {})
+
+5. **Rolling Update Simulator** – Simulate rolling updates using Python to ensure zero downtime during deployments.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+apps_v1 = client.AppsV1Api()
+
+def trigger_rolling_update(namespace, deployment_name):
+    deployment = apps_v1.read_namespaced_deployment(deployment_name, namespace)
+    deployment.spec.template.metadata.annotations["kubectl.kubernetes.io/restartedAt"] = "2025-05-07T07:30:00Z"
+    apps_v1.patch_namespaced_deployment(deployment_name, namespace, deployment)
+
+trigger_rolling_update("default", "my-deployment")
+
+6. **Kubernetes Event Listener** – Set up a listener using Python that reacts to specific Kubernetes events, such as pod failures or resource updates.
+
+from kubernetes import client, config, watch
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+
+def watch_pod_events(namespace="default"):
+    w = watch.Watch()
+    for event in w.stream(v1.list_namespaced_pod, namespace):
+        print(f"Event: {event['type']} Pod: {event['object'].metadata.name}")
+
+watch_pod_events()
+
+7. **Persistent Volume Monitor** – Track and alert on persistent volume usage exceeding certain thresholds.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+
+def monitor_pv_usage():
+    pvs = v1.list_persistent_volume()
+    for pv in pvs.items:
+        print(f"PV: {pv.metadata.name}, Capacity: {pv.spec.capacity}")
+
+monitor_pv_usage()
+
+8. **Pod-to-Pod Communication Test** – Write Python tests that verify networking between pods in a Kubernetes cluster.
+
+import socket
+
+def test_pod_connection(target_pod_ip, port=8080):
+    try:
+        s = socket.create_connection((target_pod_ip, port), timeout=5)
+        print("Connection successful!")
+        s.close()
+    except socket.error:
+        print("Connection failed.")
+
+test_pod_connection("10.244.1.12")
+
+9. **Namespace Usage Auditor** – Generate reports on resource utilization across different namespaces.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+
+def audit_namespace_usage():
+    namespaces = v1.list_namespace()
+    for ns in namespaces.items:
+        print(f"Namespace: {ns.metadata.name}")
+
+audit_namespace_usage()
+
+10. **Kubernetes RBAC Analyzer** – Create a Python tool to analyze and validate Role-Based Access Control (RBAC) settings.
+
+from kubernetes import client, config
+
+config.load_kube_config()
+auth_v1 = client.RbacAuthorizationV1Api()
+
+def analyze_rbac_roles(namespace="default"):
+    roles = auth_v1.list_namespaced_role(namespace)
+    for role in roles.items:
+        print(f"Role: {role.metadata.name}")
+
+analyze_rbac_roles()
+
+11. **Kubernetes API Wrapper** – Develop a Python wrapper around the Kubernetes API for easier automation.
+
+from kubernetes import client, config
+
+class KubernetesWrapper:
+    def __init__(self):
+        config.load_kube_config()
+        self.v1 = client.CoreV1Api()
+
+    def list_pods(self, namespace="default"):
+        return self.v1.list_namespaced_pod(namespace)
+
+wrapper = KubernetesWrapper()
+print(wrapper.list_pods())
+
+12. **Service Discovery Debugger** – Debug Kubernetes service discovery issues using Python.
+
+import requests
+
+def check_service_discovery(service_url):
+    try:
+        response = requests.get(service_url)
+        print(f"Service Response: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+
+check_service_discovery("http://my-service.default.svc.cluster.local")
+
+13. **Custom Admission Controller** – Build a simple admission controller that enforces custom policies.
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/validate", methods=["POST"])
+def validate():
+    admission_request = request.json
+    # Custom validation logic
+    allowed = True
+    return jsonify({"response": {"allowed": allowed}})
+
+if __name__ == "__main__":
+    app.run(port=443, ssl_context=("cert.pem", "key.pem"))
+
+14. **Log Aggregation & Analysis** – Write a script that gathers logs from multiple pods and performs basic analytics.
+
+import kubernetes.client
+import kubernetes.config
+
+kubernetes.config.load_kube_config()
+v1 = kubernetes.client.CoreV1Api()
+
+def fetch_logs(namespace, pod_name, container_name):
+    logs = v1.read_namespaced_pod_log(pod_name, namespace, container=container_name)
+    print(logs)
+
+fetch_logs("default", "my-pod", "my-container")
+
+15. **Backup & Restore Utility** – Develop a Python tool that backs up and restores Kubernetes resources.
+
+import subprocess
+
+def backup_kubernetes_resources():
+    subprocess.run(["kubectl", "get", "all", "-o", "yaml", ">", "backup.yaml"])
+
+def restore_kubernetes_resources():
+    subprocess.run(["kubectl", "apply", "-f", "backup.yaml"])
+
+backup_kubernetes_resources()
+
+16. **Helm Chart Validator** – Validate Helm charts using Python to ensure best practices.
+
+import subprocess
+
+def validate_helm_chart(chart_path):
+    result = subprocess.run(["helm", "lint", chart_path], capture_output=True, text=True)
+    print(result.stdout)
+
+validate_helm_chart("./mychart")
+
+17. **Kubernetes Deployment Generator** – Automate the creation of YAML manifests based on given requirements.
+
+import yaml
+
+deployment_template = {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {"name": "my-app"},
+    "spec": {
+        "replicas": 2,
+        "selector": {"matchLabels": {"app": "my-app"}},
+        "template": {
+            "metadata": {"labels": {"app": "my-app"}},
+            "spec": {"containers": [{"name": "my-app", "image": "nginx"}]},
+        },
+    },
+}
+
+with open("deployment.yaml", "w") as f:
+    yaml.dump(deployment_template, f)
+
+print("Deployment YAML generated!")
+
